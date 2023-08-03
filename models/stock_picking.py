@@ -79,6 +79,7 @@ class StockPickingInherit(models.Model):
                         'location_dest_id': location_dest_id,
                         'auto_generated': True,
                         'origin': self.name,
+                        'fsc': self.fsc,
                     }
                     picking_id = self.env['stock.picking'].sudo().create(picking_vals)
                 else:
@@ -87,21 +88,21 @@ class StockPickingInherit(models.Model):
                 for move in self.move_lines:
                     lines = self.move_line_ids.filtered(lambda x: x.product_id == move.product_id)
                     done_qty = sum(lines.mapped('qty_done'))
+                    trozos = sum(lines.mapped('trozos'))
                     if not done_qty:
                         done_qty = sum(lines.mapped('product_uom_qty'))
                     move_vals = {
                         'picking_id': picking_id.id,
                         'picking_type_id': operation_type_id.id,
-                        'name': move.name,
                         'product_id': move.product_id.id,
-                        'product_uom': move.product_uom.id,
-                        'quantity_done': move.quantity_done,
-                        'product_uom_qty': done_qty,
+                        'product_uom_id': move.product_uom.id,
+                        'trozos': trozos,
+                        'qty_done': done_qty,
                         'location_id': location_id,
                         'location_dest_id': location_dest_id,
                         'company_id': company_id.id
                     }
-                    self.env['stock.move'].sudo().create(move_vals)
+                    self.env['stock.move.line'].sudo().create(move_vals)
                 if picking_id:
                     picking_id.sudo().action_confirm()
                     picking_id.sudo().action_assign()
