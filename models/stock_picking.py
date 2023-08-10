@@ -33,9 +33,11 @@ class StockPickingInherit(models.Model):
     def button_validate(self):
         """Creating the internal transfer if it is not created from another picking"""
         res = super(StockPickingInherit, self).button_validate()
-        if not self.auto_generated:
-            self.create_intercompany_transfer()
+        if self.picking_type_id.solicitud_rollizo:
+            if not self.auto_generated:
+                self.create_intercompany_transfer()
         return res
+
 
     def create_intercompany_transfer(self):
         """Creating the transfer if the selected company is enabled the internal transfer option"""
